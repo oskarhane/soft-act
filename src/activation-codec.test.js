@@ -1,3 +1,4 @@
+import fs from "fs";
 import {
   generateCodeWithKeyFile,
   generateCode,
@@ -42,6 +43,16 @@ test("generateCode fails if no activationData", async () => {
   await expect(generateCode(privateKeyStr, null)).rejects.toEqual(
     new Error("No activationData provided")
   );
+});
+
+test("generateCode succeeds", async () => {
+  expect.assertions(1);
+  const privateKeyFilePath = "./keys/private.test.pem";
+  const privateKey = fs.readFileSync(privateKeyFilePath, "utf8");
+  const signedCode = await generateCode(privateKey, activationData);
+  expect(
+    signedCode.indexOf("########################################")
+  ).toEqual(0);
 });
 
 test("generateCodeFromKeyFile succeeds", async () => {
