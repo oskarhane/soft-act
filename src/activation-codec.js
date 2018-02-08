@@ -9,13 +9,24 @@ export const cryptoAsync = {
   verify: cb2Promise(crypto2.verify.sha256)
 };
 
-export async function generateCodeFromKeyFile(privateKeyPath, activationData) {
+async function readPrivateKey(privateKeyPath) {
   try {
-    const pk = await cryptoAsync.readPrivateKey(privateKeyPath);
-    return generateCode(pk, activationData);
+    return await cryptoAsync.readPrivateKey(privateKeyPath);
   } catch (e) {
     throw new Error(e.message);
   }
+}
+async function readPublicKey(publicKeyPath) {
+  try {
+    return await cryptoAsync.readPublicKey(publicKeyPath);
+  } catch (e) {
+    throw new Error(e.message);
+  }
+}
+
+export async function generateCodeFromKeyFile(privateKeyPath, activationData) {
+  const pk = await readPrivateKey(privateKeyPath);
+  return await generateCode(pk, activationData);
 }
 
 export async function generateCode(privateKey, activationData) {
@@ -38,19 +49,30 @@ export async function generateCode(privateKey, activationData) {
   }
 }
 
-export const verifyCode = (publicKeyPath, signedActivationCode) => {
-  return cryptoAsync.readPublicKey(publicKeyPath).then(([err, publicKey]) => {
-    const fullactivationData = yaml.safeLoad(signedActivationCode);
-    const signature = fullactivationData.signature;
-    delete fullactivationData.signature;
-    const partialLicense = yaml.safeDump(fullactivationData);
-    return cryptoAsync
-      .verify(partialLicense, publicKey, signature)
-      .then(([err, isValid]) => {
-        return isValid;
-      });
-  });
-};
+export async function verifyCodeFromPublicKeyFile(
+  publicKeyPath,
+  signedActivationCode
+) {
+  const pubk = await readPublicKey(publicKeyPath);
+  return await verifyCode(pubk, signedActivationCode);
+}
+
+export async function verifyCode(publicKey, signedActivationCode) {
+  const fullactivationData = yaml.safeLoad(signedActivationCode);
+  const signature = fullactivationData.signature;
+  delete fullactivationData.signature;
+  const partialLicense = yaml.safeDump(fullactivationData);
+  try {
+    const isValid = await cryptoAsync.verify(
+      partialLicense,
+      publicKey,
+      signature
+    );
+    return isValid;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+}
 
 export const extractCode = (publicKeyPath, signedActivationCode) => {
   return cryptoAsync.readPublicKey(publicKeyPath).then(([err, publicKey]) => {
