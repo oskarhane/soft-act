@@ -1,6 +1,3 @@
-export { generateCode, verifyCode, extractCode } from "./activation-codec.js";
-export { register, recall } from "./user-registration.js";
-
 import moment from "moment";
 
 export function isAuthorized(userInfo, activationCode, feature) {
