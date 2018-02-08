@@ -74,20 +74,23 @@ export async function verifyCode(publicKey, signedActivationCode) {
   }
 }
 
-export const extractCode = (publicKeyPath, signedActivationCode) => {
-  return cryptoAsync.readPublicKey(publicKeyPath).then(([err, publicKey]) => {
+export async function extractCodeFromPublicKeyFile(
+  publicKeyPath,
+  signedActivationCode
+) {
+  const pubk = await readPublicKey(publicKeyPath);
+  return await extractCode(pubk, signedActivationCode);
+}
+
+export async function extractCode(publicKey, signedActivationCode) {
+  try {
     const fullactivationData = yaml.safeLoad(signedActivationCode);
-    const signature = fullactivationData.signature;
-    delete fullactivationData.signature;
-    const partialLicense = yaml.safeDump(fullactivationData);
-    return cryptoAsync
-      .verify(partialLicense, publicKey, signature)
-      .then(([err, isValid]) => {
-        if (isValid) {
-          return fullactivationData;
-        } else {
-          throw new Error("invalid activation code");
-        }
-      });
-  });
-};
+    const isValid = await verifyCode(publicKey, signedActivationCode);
+    if (!isValid) {
+      throw new Error("Invalid activation code");
+    }
+    return fullactivationData;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+}
