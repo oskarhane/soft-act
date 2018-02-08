@@ -1,8 +1,8 @@
 import {
-  generateCodeFromKeyFile,
+  generateCodeWithKeyFile,
   generateCode,
-  verifyCodeFromPublicKeyFile,
-  extractCodeFromPublicKeyFile
+  verifyCodeWithPublicKeyFile,
+  extractCodeWithPublicKeyFile
 } from "./activation-codec";
 
 const activationData = {
@@ -22,7 +22,7 @@ test("generateCodeFromKeyFile fails if no private key file", async () => {
   const privateKeyFilePath = "";
 
   await expect(
-    generateCodeFromKeyFile(privateKeyFilePath, activationData)
+    generateCodeWithKeyFile(privateKeyFilePath, activationData)
   ).rejects.toEqual(new Error("ENOENT: no such file or directory, open ''"));
 });
 
@@ -48,7 +48,7 @@ test("generateCodeFromKeyFile succeeds", async () => {
   expect.assertions(1);
   const privateKeyFilePath = "./keys/private.test.pem";
 
-  const signedCode = await generateCodeFromKeyFile(
+  const signedCode = await generateCodeWithKeyFile(
     privateKeyFilePath,
     activationData
   );
@@ -64,7 +64,7 @@ describe("code checks", () => {
 
   let signedCode;
   beforeEach(async () => {
-    signedCode = await generateCodeFromKeyFile(privateKeyPath, activationData);
+    signedCode = await generateCodeWithKeyFile(privateKeyPath, activationData);
   });
   afterEach(() => {
     signedCode = null;
@@ -74,15 +74,15 @@ describe("code checks", () => {
     expect.assertions(1);
     const privateKeyFilePath = "";
     await expect(
-      verifyCodeFromPublicKeyFile(privateKeyFilePath, activationData)
+      verifyCodeWithPublicKeyFile(privateKeyFilePath, activationData)
     ).rejects.toEqual(new Error("ENOENT: no such file or directory, open ''"));
   });
   test("verifyCodeFromPublicKeyFile works", async () => {
-    const res = await verifyCodeFromPublicKeyFile(publicKeyPath, signedCode);
+    const res = await verifyCodeWithPublicKeyFile(publicKeyPath, signedCode);
     expect(res).toEqual(true);
   });
   test("verifyCodeFromPublicKeyFile fails if wrong signature for key", async () => {
-    const res = await verifyCodeFromPublicKeyFile(publicKeyPath2, signedCode);
+    const res = await verifyCodeWithPublicKeyFile(publicKeyPath2, signedCode);
     expect(res).toEqual(false);
   });
 
@@ -90,11 +90,11 @@ describe("code checks", () => {
     expect.assertions(1);
     const privateKeyFilePath = "";
     await expect(
-      extractCodeFromPublicKeyFile(privateKeyFilePath, activationData)
+      extractCodeWithPublicKeyFile(privateKeyFilePath, activationData)
     ).rejects.toEqual(new Error("ENOENT: no such file or directory, open ''"));
   });
   test("extractCodeFromPublicKeyFile works", async () => {
-    const res = await extractCodeFromPublicKeyFile(publicKeyPath, signedCode);
+    const res = await extractCodeWithPublicKeyFile(publicKeyPath, signedCode);
     expect(res).toEqual({
       ...activationData,
       signature: validCodeSignature
@@ -103,7 +103,7 @@ describe("code checks", () => {
   test("extractCodeFromPublicKeyFile fails if wrong signature for key", async () => {
     expect.assertions(1);
     await expect(
-      extractCodeFromPublicKeyFile(publicKeyPath2, signedCode)
+      extractCodeWithPublicKeyFile(publicKeyPath2, signedCode)
     ).rejects.toEqual(new Error("Invalid activation code"));
   });
 });

@@ -24,7 +24,7 @@ async function readPublicKey(publicKeyPath) {
   }
 }
 
-export async function generateCodeFromKeyFile(privateKeyPath, activationData) {
+export async function generateCodeWithKeyFile(privateKeyPath, activationData) {
   const pk = await readPrivateKey(privateKeyPath);
   return await generateCode(pk, activationData);
 }
@@ -49,7 +49,7 @@ export async function generateCode(privateKey, activationData) {
   }
 }
 
-export async function verifyCodeFromPublicKeyFile(
+export async function verifyCodeWithPublicKeyFile(
   publicKeyPath,
   signedActivationCode
 ) {
@@ -74,7 +74,7 @@ export async function verifyCode(publicKey, signedActivationCode) {
   }
 }
 
-export async function extractCodeFromPublicKeyFile(
+export async function extractCodeWithPublicKeyFile(
   publicKeyPath,
   signedActivationCode
 ) {

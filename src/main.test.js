@@ -1,8 +1,8 @@
 import moment from "moment";
 import { isAuthorized } from "./main";
 import {
-  generateCodeFromKeyFile,
-  extractCodeFromPublicKeyFile
+  generateCodeWithKeyFile,
+  extractCodeWithPublicKeyFile
 } from "./activation-codec";
 
 const validUser = {
@@ -24,7 +24,7 @@ const validActivationData = {
   organization: "Acme Inc.",
   email: "/.*/",
   expirationDate: moment()
-    .add(1, "years")
+    .add(1, "day")
     .format()
 };
 
@@ -52,11 +52,11 @@ describe("main", () => {
   });
 
   test("isAuthorized denies licenses for non-authorized features", async () => {
-    const validSignedCode = await generateCodeFromKeyFile(
+    const validSignedCode = await generateCodeWithKeyFile(
       privateKeyPath,
       validActivationData
     );
-    const extractedCode = await extractCodeFromPublicKeyFile(
+    const extractedCode = await extractCodeWithPublicKeyFile(
       publicKeyPath,
       validSignedCode
     );
@@ -65,11 +65,11 @@ describe("main", () => {
     expect(res).toEqual(false);
   });
   test("isAuthorized denies licenses for non-authorized user", async () => {
-    const validSignedCode = await generateCodeFromKeyFile(
+    const validSignedCode = await generateCodeWithKeyFile(
       privateKeyPath,
       validActivationData
     );
-    const extractedCode = await extractCodeFromPublicKeyFile(
+    const extractedCode = await extractCodeWithPublicKeyFile(
       publicKeyPath,
       validSignedCode
     );
@@ -78,11 +78,11 @@ describe("main", () => {
     expect(res).toEqual(false);
   });
   test("isAuthorized denies licenses for expired date", async () => {
-    const validSignedCode = await generateCodeFromKeyFile(
+    const validSignedCode = await generateCodeWithKeyFile(
       privateKeyPath,
       invalidActivationData
     );
-    const extractedCode = await extractCodeFromPublicKeyFile(
+    const extractedCode = await extractCodeWithPublicKeyFile(
       publicKeyPath,
       validSignedCode
     );
@@ -91,11 +91,11 @@ describe("main", () => {
     expect(res).toEqual(false);
   });
   test("isAuthorized approves licenses for valid data", async () => {
-    const validSignedCode = await generateCodeFromKeyFile(
+    const validSignedCode = await generateCodeWithKeyFile(
       privateKeyPath,
       validActivationData
     );
-    const extractedCode = await extractCodeFromPublicKeyFile(
+    const extractedCode = await extractCodeWithPublicKeyFile(
       publicKeyPath,
       validSignedCode
     );

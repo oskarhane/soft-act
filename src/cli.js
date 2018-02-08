@@ -9,9 +9,9 @@ import moment from "moment";
 import callbacks from "when/callbacks";
 
 import {
-  generateCode,
-  verifyCode,
-  extractCode,
+  generateCodeWithKeyFile,
+  verifyCodeWithPublicKeyFile,
+  extractCodeWithPublicKeyFile,
   register,
   recall,
   isAuthorized
@@ -98,16 +98,18 @@ vorpalCLI
       expirationDate: args.options.date || nextYear.format()
     };
 
-    generateCode(privateKeyPath, activationData).then(signedActivation => {
-      const activationCodeFilename = activationCodeFileFor(args.codename);
-      self.log("generated", signedActivation);
-      fs.writeFile(activationCodeFilename, signedActivation, err => {
-        if (err) {
-          self.log(err);
-        }
-        self.log('Generated "' + activationCodeFilename + '"');
-      });
-    });
+    generateCodeWithKeyFile(privateKeyPath, activationData).then(
+      signedActivation => {
+        const activationCodeFilename = activationCodeFileFor(args.codename);
+        self.log("generated", signedActivation);
+        fs.writeFile(activationCodeFilename, signedActivation, err => {
+          if (err) {
+            self.log(err);
+          }
+          self.log('Generated "' + activationCodeFilename + '"');
+        });
+      }
+    );
 
     callback();
   });
@@ -185,7 +187,10 @@ vorpalCLI
             .call(fs.readFile, activationCodeFilename, "utf8")
             .then(([err, plainActivationCode]) => {
               if (err) throw Error(err);
-              return extractCode(publicKeyPath, plainActivationCode)
+              return extractCodeWithPublicKeyFile(
+                publicKeyPath,
+                plainActivationCode
+              )
                 .then(extractedActivationCode => {
                   return isAuthorized(
                     userInfo,
