@@ -1,4 +1,13 @@
 import moment from "moment";
+export {
+  generateCode,
+  generateCodeWithKeyFile,
+  verifyCode,
+  verifyCodeWithPublicKeyFile,
+  extractCode,
+  extractCodeWithPublicKeyFile
+} from "./activation-codec.js";
+export { register, recall } from "./user-registration.js";
 
 export function isAuthorized(userInfo, activationCode, feature) {
   if (typeof activationCode !== "object" || !activationCode) {
