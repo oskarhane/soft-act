@@ -42,7 +42,7 @@ export async function generateCode(privateKey, activationData) {
     return (
       "########################################\n" +
       "# NEO4J SOFTWARE FEATURE ACTIVATION CODE\n" +
-      yaml.safeDump({ ...activationData, signature })
+      yaml.safeDump(Object.assign({}, activationData, { signature }))
     );
   } catch (e) {
     throw new Error(e.message);
