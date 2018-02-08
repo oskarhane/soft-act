@@ -22,6 +22,7 @@ test("generateCodeFromKeyFile fails if no private key file", async () => {
     generateCodeFromKeyFile(privateKeyFilePath, activationData)
   ).rejects.toEqual(new Error("ENOENT: no such file or directory, open ''"));
 });
+
 test("generateCode fails if no private key", async () => {
   expect.assertions(1);
   const privateKeyStr = "";
@@ -30,6 +31,7 @@ test("generateCode fails if no private key", async () => {
     new Error("No private key provided")
   );
 });
+
 test("generateCode fails if no activationData", async () => {
   expect.assertions(1);
   const privateKeyStr = "x";
@@ -37,4 +39,17 @@ test("generateCode fails if no activationData", async () => {
   await expect(generateCode(privateKeyStr, null)).rejects.toEqual(
     new Error("No activationData provided")
   );
+});
+
+test("generateCodeFromKeyFile succeeds", async () => {
+  expect.assertions(1);
+  const privateKeyFilePath = "./keys/private.test.pem";
+
+  const signedCode = await generateCodeFromKeyFile(
+    privateKeyFilePath,
+    activationData
+  );
+  expect(
+    signedCode.indexOf("########################################")
+  ).toEqual(0);
 });

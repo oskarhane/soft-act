@@ -1,25 +1,12 @@
 import yaml from "js-yaml";
-import callbacks from "when/callbacks";
-
-const crypto2 = require("crypto2");
-
-function cb2Promise(fn) {
-  return async function(...args) {
-    return await new Promise((resolve, reject) => {
-      const cb = (err, res) => {
-        if (err) return reject(err);
-        return resolve(res);
-      };
-      fn(...args, cb);
-    });
-  };
-}
+import crypto2 from "crypto2";
+import { cb2Promise } from "./utils";
 
 export const cryptoAsync = {
   readPrivateKey: cb2Promise(crypto2.readPrivateKey),
   readPublicKey: cb2Promise(crypto2.readPublicKey),
-  sign: cb2Promise(crypto2.sign),
-  verify: cb2Promise(crypto2.verify)
+  sign: cb2Promise(crypto2.sign.sha256),
+  verify: cb2Promise(crypto2.verify.sha256)
 };
 
 export async function generateCodeFromKeyFile(privateKeyPath, activationData) {
@@ -27,7 +14,7 @@ export async function generateCodeFromKeyFile(privateKeyPath, activationData) {
     const pk = await cryptoAsync.readPrivateKey(privateKeyPath);
     return generateCode(pk, activationData);
   } catch (e) {
-    throw Error(e.message);
+    throw new Error(e.message);
   }
 }
 
@@ -39,15 +26,16 @@ export async function generateCode(privateKey, activationData) {
     throw Error("No activationData provided");
   }
   const license = yaml.safeDump(activationData);
-  return cryptoAsync.sign(license, privateKey).then(([err, signature]) => {
-    console.log("err: ", err);
-    activationData.signature = signature;
+  try {
+    const signature = await cryptoAsync.sign(license, privateKey);
     return (
       "########################################\n" +
       "# NEO4J SOFTWARE FEATURE ACTIVATION CODE\n" +
-      yaml.safeDump(activationData)
+      yaml.safeDump({ ...activationData, signature })
     );
-  });
+  } catch (e) {
+    throw new Error(e.message);
+  }
 }
 
 export const verifyCode = (publicKeyPath, signedActivationCode) => {
